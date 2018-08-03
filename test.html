@@ -7,52 +7,132 @@
     <title>Document</title>
     <script src="js/zrender.js"></script>
     <style>
-    .main{width:600px;height:800px}
+        
+    .main{width:400px;height:400px;}
+    *{margin:0px;padding:0px;}
     </style>
 </head>
 <body>
     <div id="main" class="main"></div>
+    <img id="im" src=""/>
+    <button id="btn">开始</button>
+    <button id="puse">暂停</button>
+    <a id="ims" download="canvas_love.png" href="javascript:">生成图片</a>
 </body>
 <script>
    var main = document.getElementById('main');
         // 初始化zrender
         var zr = zrender.init(main);
+
+        //圆形
         var circle = new zrender.Circle({
             shape: {
-                 cx: 200,
-                cy: 200,
-                r: 40
-            },
+                    cx: 200,
+                    cy: 200,
+                    r: 40
+              },
             draggable:true,
+            z:3,
             style: {
                 fill: '#F00',
                 stroke: '#F00',
                 text:"中文",
-                textFill:'#ffffff'
+                textFill:'#ffffff',                
             }
         });
         circle.attr('shape', {
             r: 30 // 只更新 r。cx、cy 将保持不变。
         });
         circle.on("click",function(){
-            alert(1);
-        })
-zr.add(circle);
-  
-  var imgs=new  zrender.Image({
-    draggable:true,
-      style:{
-        image:"test/data/hill-Kilimanjaro.png",
-        width:200,
-        height:200,
-      },
-  })
-  zr.add(imgs);
-  window.onload=function(){
-    setTimeout(() => {
-       var canvas=document.querySelectorAll("[data-zr-dom-id='zr_0']");
-       console.log(canvas.toDataURL("image/png"))
-    }, 2000);
-  }    
+                 
+        });
+       
+
+        //图片
+        var imgs=new  zrender.Image({
+            draggable:true,
+            style:{
+                image:"img/hill-Kilimanjaro.png",
+                width:200,
+                height:200,       
+            },
+            z:5
+        });
+
+         //图片
+         var sdm=new  zrender.Image({
+            draggable:true,
+            style:{
+                image:"img/sdm.png",
+                width:200,
+                height:200,       
+            },
+            z:6
+        });
+
+       var imgd=new Image();
+        imgd.src="img/wujia.jpg"
+        var nheight="";
+        
+        
+        imgd.onload=function(){
+            let canvas=document.querySelectorAll("[data-zr-dom-id='zr_0']");
+            let nwidth=main.offsetWidth;
+            let iscal=imgd.width/imgd.height;
+             nheight=parseInt(nwidth/iscal)
+            console.log(nheight)
+            main.children[0].style.height=nheight+"px";
+            main.style.height=nheight+"px";
+            canvas[0].height=nheight;
+            canvas[0].style.height=nheight+"px";
+            ;
+            var imgds=new zrender.Image({
+            draggable:false,
+            style:{
+                image:"img/wujia.jpg",
+                width:nwidth,
+                height:nheight,       
+            },
+            z:1
+          }); 
+        
+        zr.add(imgds) 
+        }
+
+        
+
+       //方形
+       let rect=new zrender.Rect({
+        shape:{x:50,y:50,width:50,height:50,r:[2,2,2,2]},
+        draggable:true,
+        style:{
+          fill:"blue",
+        },
+        z:9        
+       });
+
+
+        //动画
+        circle.animate('shape',false).when(2000,{cx:400}).delay(2000);
+        //zr.add(imgs);
+        //zr.add(circle);
+        //zr.add(rect);
+        zr.add(sdm);       
+        var btn=document.querySelector("#btn");
+        var ims=document.querySelector("#ims");
+        btn.onclick=function(){
+            circle.animators[0].start();
+        }
+        puse.onclick=function(){
+            circle.animators[0].pause();
+        }
+        ims.onclick=function(){
+            var canvas=document.querySelectorAll("[data-zr-dom-id='zr_0']");
+            let src=canvas[0].toDataURL("image/png");
+            var im=document.querySelector("#im");
+              im.src=src; 
+              this.href=src;
+        }
+        
 </script>
 </html>

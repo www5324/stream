@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>工作流</title>
+    <script src="https://cdn.bootcss.com/fabric.js/2.3.0/fabric.min.js"></script>
+    <link rel="stylesheet" href="css/iconfont.css">
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .menu {
+            float: left;
+            width: 100px;
+        }
+
+        ul,
+        li {
+            list-style: none;
+            user-select: none;
+        }
+
+        .menu li {
+            user-select: none;
+            list-style: none;
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            font-size: 20px;
+            border: 1px solid #ddd;
+            float:left;
+            text-align: center;
+            line-height: 20px;
+        }
+
+        #main {
+            width: 600px;
+            height: 600px;
+            float: left
+        }
+
+        .abs {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+        }
+
+        .canvas-container {
+            float: left
+        }
+
+        .move,
+        .moved {
+            position: fixed;
+            transform: translate3d(0px, 0px, 0px);
+            width: 20px;
+            height: 20px;
+            font-size: 20px;
+        }
+        .upper-canvas {
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="clone" class="menu">
+        <li class="icon iconfont icon-jiantou_youxia" name="bbb"></li>
+        <li class="icon iconfont icon-edit" name="aaa"></li>
+        <li class="icon iconfont icon-reloadtime" name="aaa"></li>
+    </ul>
+    <canvas id="main" width="600" height="600"></canvas>
+    <button id="set">保存数据</button>
+    <script>
+        var canvas = new fabric.Canvas('main');
+        class stream {
+            constructor(obj) {
+                this.off = obj.off;
+                this.lock = false;
+                this.pageX1 = obj.pageX1;
+                this.pageY1 = obj.pageY1;
+                this.pageX2 = obj.pageX2;
+                this.pageY2 = obj.pageY2;
+                this.now = 0;
+                this.menu;
+                this.mclone = "";
+                this.nleft = 0;
+                this.ntop = 0;
+                this.line = "";
+                this.clonedom = document.querySelectorAll(obj.clonedom);
+                this.menu=this.clonedom[0].parentNode.offsetWidth;
+                console.log(this.menu)
+                document.querySelector(".canvas-container").oncontextmenu = function () {
+                    return false;
+                }
+                this.getobj();
+            }
+            cloned(obj, cls) {
+                console.log(obj)
+                let clone = obj.cloneNode(true);
+                clone.classList.add(cls);
+                let left = obj.offsetLeft;
+                let top = clone.offsetTop;
+                console.log(top);
+                document.body.appendChild(clone);
+                clone.style.transform = "translate3d(" + left + "px," + (top-10)+ "px,0px)";
+                this.mclone = clone;
+                this.now = this.matrixToArray(getComputedStyle(this.mclone).transform);
+                //this.now = this.matrixToArray(this.mclone.style.transform)
+            }
+            clone() {
+                document.addEventListener("mousedown", (e) => {
+                    this.pageX1 = 0, this.pageY2 = 0, this.pageX2 = 0, this.pageY1 = 0;
+                    if (e.button == 0) {
+                        this.pageX1 = e.pageX;
+                        this.pageY1 = e.pageY;
+                        var that = e.target;
+                        if (that.getAttribute("name") == "aaa") {
+                            this.cloned(that, "move");
+                            this.off = true;
+                        }
+                        else if (that.getAttribute("name") == "bbb") {
+                            this.cloned(that, "moved")
+                            this.off = true;
+                            this.lock = true
+
+                        }
+                    }
+                })
+                document.addEventListener("mousemove", (e) => {
+                    e.preventDefault();
+                    if (this.off) {
+                        this.pageX2 = e.pageX;
+                        this.pageY2 = e.pageY;
+                        this.nleft = parseInt(this.now[4]) + (this.pageX2 - this.pageX1);
+                        this.ntop = parseInt(this.now[5]) + (this.pageY2 - this.pageY1);
+                        this.mclone.style.transform = "translate3d(" + this.nleft + "px," + this.ntop + "px,0px)";
+                    }
+
+                });
+                document.addEventListener("mouseup", (e) => {
+                    var obj = document.querySelector(".move");
+                    var obj2 = document.querySelector(".moved");
+                    this.off = false;
+                    this.lock = false;
+                    var canvaswd = document.querySelector(".canvas-container");
+                    if (this.nleft < canvaswd.offsetLeft || this.ntop < canvaswd.offsetTop) {
+                        if (obj || obj2) {
+                            obj && obj.parentNode.removeChild(obj);
+                            obj2 && obj2.parentNode.removeChild(obj2);
+                        }
+                        return false;
+                    }
+                    if (obj || obj2) {
+                        obj && obj.parentNode.removeChild(obj);
+                        obj2 && obj2.parentNode.removeChild(obj2);
+                        if (obj) {
+                            var rect3 = new fabric.Rect({
+                                left: this.nleft - this.menu,
+                                top: this.ntop,
+                                strokeWidth: 2,
+                                fill: 'white',
+                                stroke: 'rgba(100,200,200,0.5)',
+                                width: 50,
+                                height: 50,
+                                originX: 'center',
+                                originY: 'center'
+                            });
+                            var text = new fabric.Text('工程部', {
+                                left: this.nleft - this.menu,
+                                top: this.ntop,
+                                fontSize: 15,
+                                originX: 'center',
+                                originY: 'center'
+                            });
+                            let group = new fabric.Group([rect3, text], {
+                                left: this.nleft - this.menu,
+                                top: this.ntop,
+                                originX: 'center',
+                                originY: 'center'
+                            });
+                            canvas.add(group);
+                            var text = "安装组"
+                            group.on("mousedblclick", function () {
+                                group.item(1).set({ text: "安装组" });
+                                canvas.add(group);
+                                // console.log(canvas._objects)
+                            });
+                            group.on("selected", () => {
+                                document.onkeyup = (e) => {
+                                    if (e.keyCode == 46) {
+                                        canvas.remove(group);
+                                    }
+                                }
+
+                            });
+                        }
+                        else if (obj2) {
+
+                            let line = new fabric.Line([100, 100, 150, 150], { stroke: '#5E2300', fill: '#5E2300', strokeWidth: 2, hasControls: true, hasRotatingPoint: true });
+                            let triangle = new fabric.Triangle({
+                                width: 10, height: 15, fill: '#5E2300', left: 160, top: 152, angle: 135
+                            });
+                            let group = new fabric.Group([line, triangle], {
+                                left: this.nleft - this.menu,
+                                top: this.ntop,
+                                originX: 'center',
+                                originY: 'center'
+                            });
+                            canvas.add(group);
+                            group.on("selected", () => {
+                                document.onkeyup = (e) => {
+                                    if (e.keyCode == 46) {
+                                        canvas.remove(group);
+                                    }
+                                }
+
+                            });
+                        }
+                        this.ntop = 0;
+                        this.nleft = 0;
+                    }
+                    else {
+                        return false;
+                    }
+                    e.stopPropagation();
+                }, false)
+            }
+            matrixToArray(str) {
+                return str.match(/(-?[0-9\.]+)/g);
+            }
+            getobj() {
+                var get = document.getElementById("set");
+                get.onclick = () => {
+                    var tojson = canvas.toJSON().objects;
+                    //this.group.item(0).set({stroke:'red'})
+                    canvas.clear().renderAll();
+                    console.log(tojson);
+                    //return;
+                    creatcav(tojson);
+                }
+            }
+        }
+        let streams = new stream({ off: false, pageX1: 0, pageX2: 0, pageY1: 0, pageY2: 0, clonedom: "#clone>li" });
+        streams.clone();
+
+        //  var line = new fabric.Line([100,100,100,200],{stroke: '#5E2300',fill:'#5E2300',strokeWidth:4,hasControls:true,hasRotatingPoint:true});
+        // canvas.add(line);
+        function creatcav(arr) {
+            for (let i = 0; i < arr.length; i++) {
+                var arrs = [];
+                if (arr[i].objects != null && arr[i].objects != undefined && arr[i].objects.length != 0) {
+
+                    for (let j = 0; j < arr[i].objects.length; j++) {
+                        if (arr[i].objects[j].type == "rect") {
+                            var rect = new fabric.Rect({
+                                left: arr[i].objects[j].left,
+                                top: arr[i].objects[j].top,
+                                strokeWidth: arr[i].objects[j].strokeWidth,
+                                fill: arr[i].objects[j].fill,
+                                stroke: arr[i].objects[j].stroke,
+                                width: arr[i].objects[j].width,
+                                height: arr[i].objects[j].height,
+                                originX: arr[i].objects[j].originX,
+                                originY: arr[i].objects[j].originY
+                            });
+                            arrs.push(rect)
+                        }
+                        else if (arr[i].objects[j].type == "text") {
+                            var text = new fabric.Text(arr[i].objects[j].text, {
+                                left: arr[i].objects[j].left,
+                                top: arr[i].objects[j].top,
+                                fontSize: arr[i].objects[j].fontSize,
+                                originX: arr[i].objects[j].originX,
+                                originY: arr[i].objects[j].originY
+                            });
+                            arrs.push(text)
+                        }
+                        else if (arr[i].objects[j].type == "line") {
+                            let line = new fabric.Line([arr[i].objects[j].x1, arr[i].objects[j].y1, arr[i].objects[j].x2, arr[i].objects[j].y2],
+                                {
+                                    left: arr[i].objects[j].left,
+                                    top: arr[i].objects[j].top,
+                                    stroke: arr[i].objects[j].stroke,
+                                    fill: arr[i].objects[j].fill,
+                                    strokeWidth: arr[i].objects[j].strokeWidth,
+                                    hasControls: arr[i].objects[j].hasControls,
+                                    hasRotatingPoint: arr[i].objects[j].hasRotatingPoint
+                                });
+                            arrs.push(line)
+                        }
+                        else if (arr[i].objects[j].type == "triangle") {
+                            let triangle = new fabric.Triangle({
+                                width: arr[i].objects[j].width, height: arr[i].objects[j].height, fill: arr[i].objects[j].fill, left: arr[i].objects[j].left, top: arr[i].objects[j].top, angle: arr[i].objects[j].angle
+                            });
+                            arrs.push(triangle);
+                        }
+                    }
+                    let group = new fabric.Group(arrs, {
+                        left: arr[i].left,
+                        top: arr[i].top,
+                        originX: arr[i].originX,
+                        originY: arr[i].originY,
+                        angle: arr[i].angle,
+                        width: arr[i].width,
+                        height: arr[i].height,
+                        scaleX: arr[i].scaleX,
+                        scaleY: arr[i].scaleY,
+                    });
+                    group.on("selected", () => {
+                        document.onkeyup = (e) => {
+                            if (e.keyCode == 46) {
+                                canvas.remove(group);
+                            }
+                        }
+                    });
+                    canvas.add(group);
+                    //creatcav(arr[i].objects);
+                }
+
+            }
+        }
+
+    </script>
+</body>
+
+</html>

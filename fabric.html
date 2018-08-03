@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdn.bootcss.com/fabric.js/2.3.0/fabric.min.js"></script>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .menu {
+            float: left;
+            width: 200px;
+        }
+
+        ul,
+        li {
+            list-style: none;
+            user-select: none;
+        }
+
+        .menu li {
+            user-select: none;
+            list-style: none
+        }
+
+        #main {
+            width: 300px;
+            height: 300px;
+            float: left
+        }
+
+        .abs {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+        }
+
+        .canvas-container {
+            float: left
+        }
+
+        .move {
+            transform: translate3d(0px, 0px, 0px);
+            position: fixed
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="clone" class="menu">
+        <li>1</li>
+        <li name="aaa">2</li>
+    </ul>
+    <canvas id="main" width="600" height="600"></canvas>
+    <img alt="没有图片显示" title="图片" id="im" src="">
+    <script>
+        var off = false;
+        var pageX1 = 0;
+        var pageY1 = 0;
+        var pageX2 = 0;
+        var pageY2 = 0;
+        var canvas = new fabric.Canvas('main');
+        var clonedom = document.querySelectorAll("#clone>li");
+        document.querySelector(".canvas-container").oncontextmenu = function () {
+
+            return false;
+        }
+
+        document.addEventListener("mousedown", function (e) {
+            if (e.button == 0) {
+                pageX1 = e.pageX;
+                pageY1 = e.pageY;
+                var that = e.target;
+                if (that.getAttribute("name") == "aaa") {
+                    var clone = that.cloneNode(true);
+                    clone.classList.add("move");
+                    document.body.appendChild(clone);
+                    mclone = clone;
+                    now = matrixToArray(getComputedStyle(mclone).transform);
+                    off = true;
+                }
+            }
+
+        })
+        document.addEventListener("mousemove", function (e) {
+            e.preventDefault();
+            if (off) {
+
+                pageX2 = e.pageX;
+                pageY2 = e.pageY;
+                var nleft = parseInt(now[4]) + (pageX2 - pageX1);
+                var nheight = parseInt(now[5]) + (pageY2 - pageY1);
+                // mclone.style.transform="translateX("+nleft+"px)";
+                mclone.style.transform = "translate3d(" + nleft + "px," + nheight + "px,0px)";
+
+
+            }
+        });
+        document.addEventListener("mouseup", function (e) {
+
+            var obj = document.querySelector(".move")
+            off = false;
+            if (obj) {
+                obj.parentNode.removeChild(obj);
+                var rect3 = new fabric.Rect({
+                    left: 150,
+                    top: 100,
+                    strokeWidth: 2,
+                    fill: 'white',
+                    stroke: 'rgba(100,200,200,0.5)',
+                    width: 50,
+                    height: 50,
+                    originX: 'center',
+                    originY: 'center'
+                });
+                var text = new fabric.Text('工程部', {
+                    left: 150,
+                    top: 100,
+                    fontSize: 15,
+                    originX: 'center',
+                    originY: 'center'
+                });
+                var group = new fabric.Group([rect3, text], {
+                    left: 150,
+                    top: 100,
+                    originX: 'center',
+                    originY: 'center'
+                });
+                canvas.add(group);
+                var text = "安装组"
+                group.on("mousedblclick", function () {
+                    group.item(1).set({ text: "安装组" });
+                    canvas.add(group);
+                });
+                group.on("selected", function (e) {
+                    var that=this;
+                     document.onkeyup=function(e){
+                       if(e.keyCode==27)
+                       {
+                           canvas.remove(that);
+                       }
+                     }
+
+                })
+            }
+            else {
+                return false;
+            }
+
+
+
+            e.stopPropagation();
+        }, false)
+
+
+
+        function matrixToArray(str) {
+
+            return str.match(/(-?[0-9\.]+)/g);
+
+        }
+
+
+        var rect = new fabric.Rect({
+            left: 100,//距离画布左侧的距离，单位是像素
+            top: 100,//距离画布上边的距离
+            fill: 'red',//填充的颜色
+            width: 100,//方形的宽度
+            height: 100,//方形的高度
+            originX: 'center',
+            originY: 'center'
+        });
+
+        //rect2的位置信息
+        var rect2 = new fabric.Rect({
+            left: 30,//距离画布左侧的距离，单位是像素
+            top: 50,//距离画布上边的距离
+            fill: 'red',//填充的颜色
+            width: 100,//方形的宽度
+            height: 100,//方形的高度
+            originX: 'center',
+            originY: 'center',
+            angle: 0,
+        });
+
+        //画形状
+        var path = new fabric.Path('M 0 0 L 200 100 L 170 200 ');
+        path.set({ left: 120, top: 120 });
+        canvas.add(path);
+        var text = new fabric.Text('hello world', {
+            left: 60,
+            top: 100,
+            fontSize: 15,
+            originX: 'center',
+            originY: 'center'
+        });
+
+        var group = new fabric.Group([rect, text], {
+            left: 150,
+            top: 100,
+            angle: -10,
+            originX: 'center',
+            originY: 'center'
+        });
+        //rect2.set("selectable",false);
+        //console.log(rect2)
+        rect2.on("rotated", function (e) {
+            //console.log(e.target.angle)
+            this.set({ fill: '#eef' });
+            var src = canvas.toDataURL("image/png");
+            var nim = document.querySelector("#im");
+            nim.src = src;
+        })
+        canvas.add(rect2, group);
+        rect.set("selectable", false)
+        group.item(0).set({ fill: "#eef" });
+        group.item(1).set({ fill: "#fff" });
+
+        canvas.add(group);
+        //引入图片
+
+        fabric.Image.fromURL("img/sdm.png", function (oImg) {
+            if (oImg.width > canvas.width) {
+                imgScale = canvas.width / oImg.width;
+                console.log(imgScale)
+            }
+            oImg.set({
+                scaleX: imgScale,
+                scaleY: imgScale,
+                originX: 'left',
+                originY: 'top',
+            });
+            console.log(oImg)
+            canvas.add(oImg)
+
+        })
+    </script>
+</body>
+
+</html>
