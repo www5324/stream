@@ -13,18 +13,15 @@
             margin: 0px;
             padding: 0px;
         }
-
         .menu {
             float: left;
             width: 100px;
         }
-
         ul,
         li {
             list-style: none;
             user-select: none;
         }
-
         .menu li {
             user-select: none;
             list-style: none;
@@ -37,23 +34,19 @@
             text-align: center;
             line-height: 20px;
         }
-
         #main {
             width: 600px;
             height: 600px;
             float: left
         }
-
         .abs {
             position: absolute;
             left: 0px;
             top: 0px;
         }
-
         .canvas-container {
             float: left
         }
-
         .move,
         .moved {
             position: fixed;
@@ -77,11 +70,10 @@
     <canvas id="main" width="600" height="600"></canvas>
     <button id="set">保存数据</button>
     <script>
-        var canvas = new fabric.Canvas('main');
+        var canvas = new fabric.Canvas('main');        
         class stream {
             constructor(obj) {
                 this.off = obj.off;
-                this.lock = false;
                 this.pageX1 = obj.pageX1;
                 this.pageY1 = obj.pageY1;
                 this.pageX2 = obj.pageX2;
@@ -94,19 +86,18 @@
                 this.line = "";
                 this.clonedom = document.querySelectorAll(obj.clonedom);
                 this.menu=this.clonedom[0].parentNode.offsetWidth;
-                console.log(this.menu)
                 document.querySelector(".canvas-container").oncontextmenu = function () {
                     return false;
                 }
                 this.getobj();
             }
-            cloned(obj, cls) {
+            cloned(obj, cls,type) {
                 console.log(obj)
                 let clone = obj.cloneNode(true);
                 clone.classList.add(cls);
+                clone.setAttribute("type",type);
                 let left = obj.offsetLeft;
                 let top = clone.offsetTop;
-                console.log(top);
                 document.body.appendChild(clone);
                 clone.style.transform = "translate3d(" + left + "px," + (top-10)+ "px,0px)";
                 this.mclone = clone;
@@ -121,15 +112,13 @@
                         this.pageY1 = e.pageY;
                         var that = e.target;
                         if (that.getAttribute("name") == "aaa") {
-                            this.cloned(that, "move");
+                            this.cloned(that, "move","rect");
                             this.off = true;
                         }
                         else if (that.getAttribute("name") == "bbb") {
-                            this.cloned(that, "moved")
+                            this.cloned(that, "move","arrow")
                             this.off = true;
-                            this.lock = true
-
-                        }
+                         }
                     }
                 })
                 document.addEventListener("mousemove", (e) => {
@@ -144,10 +133,9 @@
 
                 });
                 document.addEventListener("mouseup", (e) => {
-                    var obj = document.querySelector(".move");
-                    var obj2 = document.querySelector(".moved");
+                    var obj = document.querySelector("[type='rect']");
+                    var obj2 = document.querySelector("[type='arrow']");
                     this.off = false;
-                    this.lock = false;
                     var canvaswd = document.querySelector(".canvas-container");
                     if (this.nleft < canvaswd.offsetLeft || this.ntop < canvaswd.offsetTop) {
                         if (obj || obj2) {
@@ -241,7 +229,6 @@
                     //this.group.item(0).set({stroke:'red'})
                     canvas.clear().renderAll();
                     console.log(tojson);
-                    //return;
                     creatcav(tojson);
                 }
             }
