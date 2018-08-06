@@ -47,8 +47,8 @@
         .canvas-container {
             float: left
         }
-        .move,
-        .moved {
+        .move
+        {
             position: fixed;
             transform: translate3d(0px, 0px, 0px);
             width: 20px;
@@ -58,18 +58,74 @@
         .upper-canvas {
             border: 1px solid #ddd;
         }
+        .mark-layer{
+            position:fixed;
+            width:100%;
+            height:100%;
+            background:rgba(25,25,25,0.6);
+            display: none; 
+            z-index: 10;
+        }        
+        .information{                      
+            justify-content:center;
+            align-items:Center;
+            z-index: 11;
+            width:100%;
+            height:100%;
+            position: fixed;
+            display:none;
+        }
+        .information .showdaig{
+          width:50%;
+          height:80%;
+          background:#fff;
+          border:1px solid #ddd;
+          position:relative;
+        }
+        .showdaig .title{
+            background:#ddd;
+            height:40px;
+            line-height: 40px;
+        }
+        .boxtxt input{width:180px;height:30px;line-height: 30px;border:1px solid #ddd;}
+        .btnbox{position: absolute;bottom:0px;left:0px;width:100%;height:50px;text-align: center}
+        .mt4{margin-top:4px;}
     </style>
 </head>
 
 <body>
     <ul id="clone" class="menu">
-        <li class="icon iconfont icon-jiantou_youxia" name="bbb"></li>
-        <li class="icon iconfont icon-edit" name="aaa"></li>
-        <li class="icon iconfont icon-reloadtime" name="ccc""></li>
+        <li class="icon iconfont icon-jiantou_youxia" name="arrow"></li>
+        <li class="icon iconfont icon-edit" name="rect"></li>
+        <li class="icon iconfont icon-reloadtime" name="circle""></li>
     </ul>
+    <div class="mark-layer">       
+    </div>
+    <div class="information">
+        <div class="showdaig">
+            <div class="title">
+               <span>标题栏</span>               
+            </div>
+            <div class="boxtxt">
+                   <div class="mt4">
+                       <label for="">标题内容:</label> <input id="cont" type="text"/>
+                    </div>
+                   <div class="mt4">
+                       <label for="">文字大小:</label> <input id="fsize" type="text"/>
+                    </div>
+            </div>
+            <div class="btnbox">
+                <a id="save" href="javascript:">保存</a>
+                <a href="javascript:">取消</a>
+            </div>
+        </div>
+                
+    </div>
     <canvas id="main" width="600" height="600"></canvas>
     <button id="set">保存数据</button>
-    <script>
+   
+</body>
+<script>
         var canvas = new fabric.Canvas('main');        
         class stream {
             constructor(obj) {
@@ -92,7 +148,6 @@
                 this.getobj();
             }
             cloned(obj, cls,type) {
-                console.log(obj)
                 let clone = obj.cloneNode(true);
                 clone.classList.add(cls);
                 clone.setAttribute("type",type);
@@ -111,17 +166,22 @@
                         this.pageX1 = e.pageX;
                         this.pageY1 = e.pageY;
                         var that = e.target;
-                        if (that.getAttribute("name") == "aaa") {
+                        if (that.getAttribute("name") == "rect") {
                             this.cloned(that, "move","rect");
                             this.off = true;
                         }
-                        else if (that.getAttribute("name") == "bbb") {
+                        else if (that.getAttribute("name") == "arrow") {
                             this.cloned(that, "move","arrow")
+                            this.off = true;
+                         }
+                         else if(that.getAttribute("name")=="circle")
+                         {
+                            this.cloned(that, "move","circle")
                             this.off = true;
                          }
                     }
                 })
-                document.addEventListener("mousemove", (e) => {
+                document.addEventListener("mousemove",(e)=>{
                     e.preventDefault();
                     if (this.off) {
                         this.pageX2 = e.pageX;
@@ -135,18 +195,21 @@
                 document.addEventListener("mouseup", (e) => {
                     var obj = document.querySelector("[type='rect']");
                     var obj2 = document.querySelector("[type='arrow']");
+                    var obj3 = document.querySelector("[type='circle']");
                     this.off = false;
                     var canvaswd = document.querySelector(".canvas-container");
                     if (this.nleft < canvaswd.offsetLeft || this.ntop < canvaswd.offsetTop) {
-                        if (obj || obj2) {
+                        if (obj || obj2||obj3) {
                             obj && obj.parentNode.removeChild(obj);
                             obj2 && obj2.parentNode.removeChild(obj2);
+                            obj3 && obj3.parentNode.removeChild(obj3);
                         }
                         return false;
                     }
-                    if (obj || obj2) {
+                    if (obj || obj2||obj3) {
                         obj && obj.parentNode.removeChild(obj);
                         obj2 && obj2.parentNode.removeChild(obj2);
+                        obj3 && obj3.parentNode.removeChild(obj3);
                         if (obj) {
                             var rect3 = new fabric.Rect({
                                 left: this.nleft - this.menu,
@@ -173,11 +236,33 @@
                                 originY: 'center'
                             });
                             canvas.add(group);
-                            var text = "安装组"
+                            
                             group.on("mousedblclick", function () {
-                                group.item(1).set({ text: "安装组" });
-                                canvas.add(group);
-                                // console.log(canvas._objects)
+                                                               
+                                //group.item(1).set({ text: "安装组" });
+                                //canvas.remove(group); 
+                                //canvas.add(group);
+                                 
+                                var mark=document.querySelector(".mark-layer");
+                                var information=document.querySelector(".information");
+                                information.style.display='flex';
+                                mark.style.display='block';
+                                var text ="";
+                                var fontSize="";
+                                var save=document.querySelector("#save");
+                                save.onclick=function(){
+                                    let cont=document.querySelector("#cont");
+                                    let fsize=document.querySelector("#fsize");
+                                    text=cont.value;
+                                    fontSize=fsize.value;
+                                    group.item(1).set({ text:text,fontSize:fontSize});
+                                    canvas.add(group);
+                                    mark.style.display="none";
+                                    information.style.display="none";
+                                }
+                                
+
+
                             });
                             group.on("selected", () => {
                                 document.onkeyup = (e) => {
@@ -185,11 +270,9 @@
                                         canvas.remove(group);
                                     }
                                 }
-
                             });
                         }
                         else if (obj2) {
-
                             let line = new fabric.Line([100, 100, 150, 150], { stroke: '#5E2300', fill: '#5E2300', strokeWidth: 2, hasControls: true, hasRotatingPoint: true });
                             let triangle = new fabric.Triangle({
                                 width: 10, height: 15, fill: '#5E2300', left: 160, top: 152, angle: 135
@@ -209,6 +292,41 @@
                                 }
 
                             });
+                        }
+                        else if(obj3)
+                        {                           
+                            let circle = new fabric.Circle({
+                                left: this.nleft - this.menu,
+                                top: this.ntop,
+                                strokeWidth: 2,
+                                fill: 'white',
+                                stroke: 'rgba(100,200,200,0.5)',
+                                radius: 20,
+                                originX: 'center',
+                                originY: 'center'
+                            });                            
+                            let text = new fabric.Text('请假', {
+                                left: this.nleft - this.menu,
+                                top: this.ntop,
+                                fontSize: 15,
+                                originX: 'center',
+                                originY: 'center'
+                            }); 
+                            let group = new fabric.Group([circle, text], {
+                                left: this.nleft - this.menu,
+                                top: this.ntop,
+                                originX: 'center',
+                                originY: 'center'
+                            });
+                            canvas.add(group);
+                            group.on("selected", () => {
+                                document.onkeyup = (e) => {
+                                    if (e.keyCode == 46) {
+                                        canvas.remove(group);
+                                    }
+                                }
+
+                            });  
                         }
                         this.ntop = 0;
                         this.nleft = 0;
@@ -287,6 +405,22 @@
                             });
                             arrs.push(triangle);
                         }
+                        else if(arr[i].objects[j].type=="circle")
+                        {
+                            let circle = new fabric.Circle({
+                                left:arr[i].objects[j].left,
+                                top: arr[i].objects[j].top,
+                                strokeWidth: 2,
+                                fill: arr[i].objects[j].fill,
+                                stroke:arr[i].objects[j].stroke,
+                                radius:arr[i].objects[j].radius,
+                                originX: 'center',
+                                originY: 'center'
+                            });
+                            arrs.push(circle);  
+                            console.log(arrs);                         
+                        }
+                        
                     }
                     let group = new fabric.Group(arrs, {
                         left: arr[i].left,
@@ -309,11 +443,7 @@
                     canvas.add(group);
                     //creatcav(arr[i].objects);
                 }
-
             }
         }
-
-    </script>
-</body>
-
+</script>
 </html>
