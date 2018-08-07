@@ -116,7 +116,7 @@
             </div>
             <div class="btnbox">
                 <a id="save" href="javascript:">保存</a>
-                <a href="javascript:">取消</a>
+                <a id="cancel" href="javascript:">取消</a>
             </div>
         </div>
                 
@@ -237,30 +237,9 @@
                             });
                             canvas.add(group);
                             
-                            group.on("mousedblclick", function () {
-                                                               
-                                //group.item(1).set({ text: "安装组" });
-                                //canvas.remove(group); 
-                                //canvas.add(group);
-                                 
-                                var mark=document.querySelector(".mark-layer");
-                                var information=document.querySelector(".information");
-                                information.style.display='flex';
-                                mark.style.display='block';
-                                var text ="";
-                                var fontSize="";
-                                var save=document.querySelector("#save");
-                                save.onclick=function(){
-                                    let cont=document.querySelector("#cont");
-                                    let fsize=document.querySelector("#fsize");
-                                    text=cont.value;
-                                    fontSize=fsize.value;
-                                    group.item(1).set({ text:text,fontSize:fontSize});
-                                    canvas.add(group);
-                                    mark.style.display="none";
-                                    information.style.display="none";
-                                }
-                                
+                            group.on("mousedblclick", ()=>{                                                        
+                               
+                                this.mddiag(group);
 
 
                             });
@@ -319,6 +298,9 @@
                                 originY: 'center'
                             });
                             canvas.add(group);
+                            group.on("mousedblclick",()=>{
+                                this.mddiag(group)
+                            })
                             group.on("selected", () => {
                                 document.onkeyup = (e) => {
                                     if (e.keyCode == 46) {
@@ -349,6 +331,39 @@
                     console.log(tojson);
                     creatcav(tojson);
                 }
+            }
+            mddiag(obj)
+            {   
+                var objs=obj;
+                var mark=document.querySelector(".mark-layer");
+                var information=document.querySelector(".information");
+                let cont=document.querySelector("#cont");
+                let fsize=document.querySelector("#fsize");               
+                var text ="";
+                var fontSize="";
+                var save=document.querySelector("#save");
+                var cancel=document.querySelector("#cancel");
+                information.style.display='flex';
+                mark.style.display='block';
+                save.onclick=function(){                    
+                    text=cont.value;
+                    fontSize=fsize.value;
+                    objs.item(1).set({ text:text,fontSize:fontSize});
+                    canvas.remove(objs);
+                    canvas.add(objs);
+                    mark.style.display="none";
+                    information.style.display="none";
+                    cont.value="";
+                    fsize.value="";                    
+                }
+                cancel.onclick=function()
+                {
+                    cont.value="";
+                    fsize.value="";
+                    mark.style.display="none";
+                    information.style.display="none";
+                }
+                
             }
         }
         let streams = new stream({ off: false, pageX1: 0, pageX2: 0, pageY1: 0, pageY2: 0, clonedom: "#clone>li" });
