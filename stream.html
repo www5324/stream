@@ -329,7 +329,7 @@
                     //this.group.item(0).set({stroke:'red'})
                     canvas.clear().renderAll();
                     console.log(tojson);
-                    creatcav(tojson);
+                    this.creatcav(tojson);
                 }
             }
             mddiag(obj)
@@ -365,13 +365,8 @@
                 }
                 
             }
-        }
-        let streams = new stream({ off: false, pageX1: 0, pageX2: 0, pageY1: 0, pageY2: 0, clonedom: "#clone>li" });
-        streams.clone();
 
-        //  var line = new fabric.Line([100,100,100,200],{stroke: '#5E2300',fill:'#5E2300',strokeWidth:4,hasControls:true,hasRotatingPoint:true});
-        // canvas.add(line);
-        function creatcav(arr) {
+            creatcav(arr) {
             for (let i = 0; i < arr.length; i++) {
                 var arrs = [];
                 if (arr[i].objects != null && arr[i].objects != undefined && arr[i].objects.length != 0) {
@@ -455,10 +450,21 @@
                             }
                         }
                     });
+                    group.on("mousedblclick",()=>{
+                                this.mddiag(group)
+                            })
                     canvas.add(group);
                     //creatcav(arr[i].objects);
                 }
             }
         }
+            
+        }
+        let streams = new stream({ off: false, pageX1: 0, pageX2: 0, pageY1: 0, pageY2: 0, clonedom: "#clone>li" });
+        streams.clone();
+
+        //  var line = new fabric.Line([100,100,100,200],{stroke: '#5E2300',fill:'#5E2300',strokeWidth:4,hasControls:true,hasRotatingPoint:true});
+        // canvas.add(line);
+
 </script>
 </html>
